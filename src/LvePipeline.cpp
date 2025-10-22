@@ -38,6 +38,10 @@ namespace lve {
         file.close();
         return buffer;
     }
+
+    void LvePipeline::bind(VkCommandBuffer command_buffer) {
+        vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
+    }
     
     PipelineConfigInfo LvePipeline::defaultPipelineConfigInfo(
         uint32_t width,
