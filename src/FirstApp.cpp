@@ -25,9 +25,9 @@ namespace lve {
 
     void FirstApp::loadModels() {
         std::vector<LveModel::Vertex> vertices {
-            {{0.0f, -0.5f}},
-            {{0.5f, 0.5f}},
-            {{-0.5f, 0.5f}}
+            {{0.0f, -0.5f}, {1.0, 0.0, 0.0}},
+            {{0.5f, 0.5f}, {0.0, 0.0, 1.0}},
+            {{-0.5f, 0.5f}, {0.0, 1.0, 0.0}}
         };
 
         lve_model = std::make_unique<LveModel>(lve_device, vertices);
