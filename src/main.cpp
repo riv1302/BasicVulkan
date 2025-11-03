@@ -1,4 +1,4 @@
-#include "FirstApp.hpp"
+#include "GravityFieldApp.hpp"
 
 // std
 #include <cstdlib>
@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 int main() {
-    lve::FirstApp app;
+    lve::GravityFieldApp app;
 
     try {
         app.run();
