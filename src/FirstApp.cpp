@@ -1,5 +1,6 @@
 #include "FirstApp.hpp"
 
+#include "LveCamera.hpp"
 #include "SimpleRenderSystem.hpp"
 
 #define GLM_FORCE_RADIANS
@@ -21,12 +22,17 @@ namespace lve {
 
     void FirstApp::run() {
         SimpleRenderSystem simple_render_system{lve_device, lve_renderer.getSwapChainRenderPass()};
+        LveCamera camera{};
         while (!lve_window.shouldClose()) {
             glfwPollEvents();
+
+            float aspect = lve_renderer.getAspectRation();
+            // camera.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
+            camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 10.f);
             
             if (auto command_buffer = lve_renderer.beginFrame()) {
                 lve_renderer.beginSwapChainRenderPass(command_buffer);
-                simple_render_system.renderGameObjects(command_buffer, game_objects);
+                simple_render_system.renderGameObjects(command_buffer, game_objects, camera);
                 lve_renderer.endSwapChainRenderPass(command_buffer);
                 lve_renderer.endFrame();
             }
@@ -98,7 +104,7 @@ namespace lve {
 
         auto cube = LveGameObject::createGameObject();
         cube.model = lve_model;
-        cube.transform.translation = {.0f, .0f, .5f};
+        cube.transform.translation = {.0f, .0f, 2.5f};
         cube.transform.scale = {.5f, .5f, .5f};
         game_objects.push_back(std::move(cube));
     }
