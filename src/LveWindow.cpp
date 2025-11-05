@@ -5,7 +5,7 @@ namespace lve {
     LveWindow::LveWindow(int w, int h, std::string name):
         width(w),
         height(h),
-        windowName(name)
+        window_name(name)
     {
         initWindow();
     }
@@ -31,7 +31,7 @@ namespace lve {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-        window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
+        window = glfwCreateWindow(width, height, window_name.c_str(), nullptr, nullptr);
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, frameBufferResizedCallback);
     }

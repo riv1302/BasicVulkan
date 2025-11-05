@@ -28,7 +28,7 @@ namespace lve {
         int height;
         bool frame_buffer_resized = false;
 
-        std::string windowName;
+        std::string window_name;
         GLFWwindow *window;
     };
 }
