@@ -13,7 +13,6 @@
 #include <cassert>
 #include <array>
 #include <chrono>
-#include <iostream>
 
 namespace lve {
     FirstApp::FirstApp()
@@ -32,16 +31,13 @@ namespace lve {
         KeyboardMovementController camera_controller{};
 
         auto  current_time = std::chrono::high_resolution_clock::now();
-        float min_pos_reached = 0.0f;
-        float max_pos_reached = 0.0f;
+
         while (!lve_window.shouldClose()) {
             glfwPollEvents();
 
             auto new_time = std::chrono::high_resolution_clock::now();
             float frame_time = std::chrono::duration<float, std::chrono::seconds::period>(new_time - current_time).count();
             current_time = new_time;
-
-            frame_time = glm::min(frame_time, MAX_FRAME_TIME);
 
             camera_controller.moveInPlaneXZ(lve_window.getGLFWwindow(), frame_time, viewer_object);
             camera.setViewYXZ(viewer_object.transform.translation, viewer_object.transform.rotation);
@@ -55,18 +51,6 @@ namespace lve {
                 lve_renderer.endSwapChainRenderPass(command_buffer);
                 lve_renderer.endFrame();
             }
-            
-            //std::cout << "---------" << std::endl;
-            // std::cout << "position = " << viewer_object.transform.translation.x << ", " << viewer_object.transform.translation.y << ", " << viewer_object.transform.translation.z << std::endl;
-            // std::cout << "position.z = " << min_pos_reached << ", " << max_pos_reached << ", " << viewer_object.transform.translation.z << std::endl;
-            // min_pos_reached = glm::min(min_pos_reached, viewer_object.transform.translation.z);
-            // max_pos_reached = glm::max(max_pos_reached, viewer_object.transform.translation.z);
-            //std::cout << "rotation = " << viewer_object.transform.rotation.x << ", " << viewer_object.transform.rotation.y << ", " << viewer_object.transform.rotation.z << std::endl;
-
-            // for (const auto& obj: game_objects){
-            //     std::cout << "obj pos- = " << obj.transform.translation.x << ", " << obj.transform.translation.y << ", " << obj.transform.translation.z << std::endl;
-            // }
-            // std::cout << "---------" << std::endl;
         }
 
         vkDeviceWaitIdle(lve_device.device());
