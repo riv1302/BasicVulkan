@@ -14,8 +14,6 @@
 #include <array>
 #include <chrono>
 
-#include <iostream>
-
 namespace lve {
     FirstApp::FirstApp()
     {
