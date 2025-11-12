@@ -14,6 +14,8 @@
 #include <array>
 #include <chrono>
 
+#include <iostream>
+
 namespace lve {
     FirstApp::FirstApp()
     {
@@ -30,12 +32,12 @@ namespace lve {
         auto viewer_object = LveGameObject::createGameObject();
         KeyboardMovementController camera_controller{};
 
-        auto  current_time = std::chrono::high_resolution_clock::now();
+        auto current_time = std::chrono::steady_clock::now();
 
         while (!lve_window.shouldClose()) {
             glfwPollEvents();
 
-            auto new_time = std::chrono::high_resolution_clock::now();
+            auto new_time = std::chrono::steady_clock::now();
             float frame_time = std::chrono::duration<float, std::chrono::seconds::period>(new_time - current_time).count();
             current_time = new_time;
 
