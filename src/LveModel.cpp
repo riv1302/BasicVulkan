@@ -1,5 +1,8 @@
 #include "LveModel.hpp"
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <TinyObjLoader/TinyObjLoader.h>
+
 #include <cassert>
 #include <cstring>
 

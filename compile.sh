@@ -1,2 +1,0 @@
-/home/nico/downloads/1.4.304.1/x86_64/bin/glslc src/shaders/shader.vert -o build/shaders/shader.vert.spv
-/home/nico/downloads/1.4.304.1/x86_64/bin/glslc src/shaders/shader.frag -o build/shaders/shader.frag.spv
