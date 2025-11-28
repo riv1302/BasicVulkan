@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LveDevice.hpp"
+#include "LveBuffer.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -38,7 +39,7 @@ namespace lve {
         };
 
         LveModel(LveDevice& device, const LveModel::Builder& builder);
-        ~LveModel();
+        ~LveModel() = default;
 
         LveModel(const LveModel&) = delete;
         LveModel& operator=(const LveModel&) = delete;
@@ -53,13 +54,11 @@ namespace lve {
 
         LveDevice& lve_device;
 
-        VkBuffer vertex_buffer;
-        VkDeviceMemory vertex_buffer_memory;
+        std::unique_ptr<LveBuffer> vertex_buffer;
         uint32_t vertex_count;
 
         bool has_index_buffer = false;
-        VkBuffer index_buffer;
-        VkDeviceMemory index_buffer_memory;
+        std::unique_ptr<LveBuffer> index_buffer;
         uint32_t index_count;
     };
 }

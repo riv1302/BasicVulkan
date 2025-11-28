@@ -63,13 +63,12 @@ namespace lve {
     }
 
     void SimpleRenderSystem::renderGameObjects(
-        VkCommandBuffer command_buffer,
-        std::vector<LveGameObject>& game_objects,
-        const LveCamera& camera
+            FrameInfo &frame_info,
+            std::vector<LveGameObject>& game_objects
     ) {
-        lve_pipeline->bind(command_buffer);
+        lve_pipeline->bind(frame_info.command_buffer);
 
-        auto projection_view = camera.getProjection() * camera.getView();
+        auto projection_view = frame_info.camera.getProjection() * frame_info.camera.getView();
 
         for (auto& obj: game_objects) {
             SimplePushConstantData push{};
@@ -77,14 +76,14 @@ namespace lve {
             push.transform = projection_view * model_matrix;
             push.model_matrix = model_matrix;
             vkCmdPushConstants(
-                command_buffer,
+                frame_info.command_buffer,
                 pipeline_layout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
                 sizeof(SimplePushConstantData),
                 &push);
-            obj.model->bind(command_buffer);
-            obj.model->draw(command_buffer);
+            obj.model->bind(frame_info.command_buffer);
+            obj.model->draw(frame_info.command_buffer);
         }
     }
 }
