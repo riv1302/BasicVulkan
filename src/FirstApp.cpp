@@ -18,12 +18,16 @@
 
 namespace lve {
     struct GlobalUbo {
-        glm::mat4 projection_view{1.f};
-        glm::vec3 light_direction = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
+        alignas(16) glm::mat4 projection_view{1.f};
+        alignas(16) glm::vec3 light_direction = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
     };
 
     FirstApp::FirstApp()
     {
+        global_pool = LveDescriptorPool::Builder(lve_device)
+            .setMaxSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
+            .build();
         loadGameObjects();
     }
 
@@ -42,7 +46,24 @@ namespace lve {
             ubo_buffers[i]->map();
         }
 
-        SimpleRenderSystem simple_render_system{lve_device, lve_renderer.getSwapChainRenderPass()};
+        auto global_set_layout = LveDescriptorSetLayout::Builder(lve_device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .build();
+
+        std::vector<VkDescriptorSet> global_descriptor_sets(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+        for(int i = 0; i < global_descriptor_sets.size(); ++i) {
+            auto buffer_info = ubo_buffers[i]->descriptorInfo();
+            LveDescriptorWriter(*global_set_layout, *global_pool)
+                .writeBuffer(0, &buffer_info)
+                .build(global_descriptor_sets[i]);
+        }
+
+
+        SimpleRenderSystem simple_render_system{
+            lve_device,
+            lve_renderer.getSwapChainRenderPass(),
+            global_set_layout->getDescriptorSetLayout()
+        };
         LveCamera camera{};
         camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5f));
 
@@ -70,7 +91,8 @@ namespace lve {
                     frame_index,
                     frame_time,
                     command_buffer,
-                    camera
+                    camera,
+                    global_descriptor_sets[frame_index]
                 };
                 // Update
                 GlobalUbo ubo{};
