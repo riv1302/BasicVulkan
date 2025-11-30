@@ -19,7 +19,9 @@
 namespace lve {
     struct GlobalUbo {
         alignas(16) glm::mat4 projection_view{1.f};
-        alignas(16) glm::vec3 light_direction = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
+        glm::vec4 ambient_light_color{1.f, 1.f, 1.f, .02f};
+        glm::vec3 light_position{-1.f};
+        alignas(16) glm::vec4 light_color{1.f}; // w is light intensity
     };
 
     FirstApp::FirstApp()
@@ -47,7 +49,7 @@ namespace lve {
         }
 
         auto global_set_layout = LveDescriptorSetLayout::Builder(lve_device)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
             .build();
 
         std::vector<VkDescriptorSet> global_descriptor_sets(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -68,6 +70,7 @@ namespace lve {
         camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5f));
 
         auto viewer_object = LveGameObject::createGameObject();
+        viewer_object.transform.translation.z = -2.5f;
         KeyboardMovementController camera_controller{};
 
         auto current_time = std::chrono::steady_clock::now();
@@ -92,7 +95,8 @@ namespace lve {
                     frame_time,
                     command_buffer,
                     camera,
-                    global_descriptor_sets[frame_index]
+                    global_descriptor_sets[frame_index],
+                    game_objects
                 };
                 // Update
                 GlobalUbo ubo{};
@@ -102,7 +106,7 @@ namespace lve {
 
                 // Render
                 lve_renderer.beginSwapChainRenderPass(command_buffer);
-                simple_render_system.renderGameObjects(frame_info, game_objects);
+                simple_render_system.renderGameObjects(frame_info);
                 lve_renderer.endSwapChainRenderPass(command_buffer);
                 lve_renderer.endFrame();
             }
@@ -112,12 +116,22 @@ namespace lve {
     }
 
     void FirstApp::loadGameObjects() {
-        std::shared_ptr<LveModel> lve_model = LveModel::createModelFromFile(lve_device, "../Models/flat_vase.obj");
+        auto flat_vase = LveGameObject::createGameObject();
+        flat_vase.model = LveModel::createModelFromFile(lve_device, "../Models/flat_vase.obj");
+        flat_vase.transform.translation = {-.5f, .5f, 0.f};
+        flat_vase.transform.scale = glm::vec3{3.f};
+        game_objects.emplace(flat_vase.getId(), std::move(flat_vase));
+        
+        auto smooth_vase = LveGameObject::createGameObject();
+        smooth_vase.model = LveModel::createModelFromFile(lve_device, "../Models/smooth_vase.obj");
+        smooth_vase.transform.translation = {.5f, .5f, 0.f};
+        smooth_vase.transform.scale = glm::vec3{3.f};
+        game_objects.emplace(smooth_vase.getId(), std::move(smooth_vase));
 
-        auto game_object = LveGameObject::createGameObject();
-        game_object.model = lve_model;
-        game_object.transform.translation = {.0f, .5f, 2.5f};
-        game_object.transform.scale = glm::vec3{3.f};
-        game_objects.push_back(std::move(game_object));
+        auto floor = LveGameObject::createGameObject();
+        floor.model = LveModel::createModelFromFile(lve_device, "../Models/quad.obj");
+        floor.transform.translation = {0.f, .5f, 0.f};
+        floor.transform.scale = glm::vec3{3.f, 1.f, 3.f};
+        game_objects.emplace(floor.getId(), std::move(floor));
     }
 }
