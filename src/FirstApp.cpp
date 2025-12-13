@@ -2,7 +2,8 @@
 
 #include "KeyboardMovementController.h"
 #include "LveCamera.hpp"
-#include "SimpleRenderSystem.hpp"
+#include "systems/SimpleRenderSystem.hpp"
+#include "systems/PointLightSystem.hpp"
 #include "LveBuffer.hpp"
 
 #define GLM_FORCE_RADIANS
@@ -18,7 +19,8 @@
 
 namespace lve {
     struct GlobalUbo {
-        alignas(16) glm::mat4 projection_view{1.f};
+        alignas(16) glm::mat4 projection{1.f};
+        alignas(16) glm::mat4 view{1.f};
         glm::vec4 ambient_light_color{1.f, 1.f, 1.f, .02f};
         glm::vec3 light_position{-1.f};
         alignas(16) glm::vec4 light_color{1.f}; // w is light intensity
@@ -66,6 +68,11 @@ namespace lve {
             lve_renderer.getSwapChainRenderPass(),
             global_set_layout->getDescriptorSetLayout()
         };
+        PointLightSystem point_light_system{
+            lve_device,
+            lve_renderer.getSwapChainRenderPass(),
+            global_set_layout->getDescriptorSetLayout()
+        };
         LveCamera camera{};
         camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5f));
 
@@ -100,13 +107,15 @@ namespace lve {
                 };
                 // Update
                 GlobalUbo ubo{};
-                ubo.projection_view = camera.getProjection() * camera.getView();
+                ubo.projection = camera.getProjection();
+                ubo.view = camera.getView();
                 ubo_buffers[frame_index]->writeToBuffer(&ubo);
                 ubo_buffers[frame_index]->flush();
 
                 // Render
                 lve_renderer.beginSwapChainRenderPass(command_buffer);
                 simple_render_system.renderGameObjects(frame_info);
+                point_light_system.render(frame_info);
                 lve_renderer.endSwapChainRenderPass(command_buffer);
                 lve_renderer.endFrame();
             }

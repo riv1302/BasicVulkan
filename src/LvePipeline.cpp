@@ -115,6 +115,9 @@ namespace lve {
         config_info.dynamic_state_info.dynamicStateCount =
             static_cast<uint32_t>(config_info.dynamic_state_enables.size());
         config_info.dynamic_state_info.flags = 0;
+
+        config_info.binding_descriptions = LveModel::Vertex::getBindingDescriptions();
+        config_info.attribute_descriptions = LveModel::Vertex::getAttributeDescriptions();
     }
 
 
@@ -157,8 +160,8 @@ namespace lve {
         shader_stages[1].pNext = nullptr;
         shader_stages[1].pSpecializationInfo = nullptr;
 
-        auto binding_descriptions = LveModel::Vertex::getBindingDescriptions();
-        auto attribute_descriptions = LveModel::Vertex::getAttributeDescriptions();
+        auto& binding_descriptions = config_info.binding_descriptions;
+        auto& attribute_descriptions = config_info.attribute_descriptions;
         VkPipelineVertexInputStateCreateInfo vertex_input_info{};
         vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
