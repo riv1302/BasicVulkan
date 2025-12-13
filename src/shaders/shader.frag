@@ -11,21 +11,32 @@ layout(push_constant) uniform Push {
     mat4 normal_matrix;
 } push;
 
+struct PointLight {
+    vec4 position;
+    vec4 color;
+};
+
 layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection_matrix;
     mat4 view_matrix;
     vec4 ambient_light_color;
-    vec3 light_position;
-    vec4 light_color;
+    PointLight point_lights[10];
+    int num_lights;
 } ubo;
 
 void main() {
-    vec3 direction_to_light = ubo.light_position - frag_pos_world;
-    float atenuation = 1.0/dot(direction_to_light, direction_to_light);
+    vec3 diffuse_light = ubo.ambient_light_color.xyz * ubo.ambient_light_color.w;
+    vec3 surface_normal = normalize(frag_normal_world);
 
-    vec3 light_color = ubo.light_color.xyz * ubo.light_color.w * atenuation;
-    vec3 ambient_light = ubo.ambient_light_color.xyz * ubo.ambient_light_color.w;
-    vec3 diffuse_light = light_color * max(dot(normalize(frag_normal_world), normalize(direction_to_light)), 0);
+    for (int i = 0; i < ubo.num_lights; ++i) {
+        PointLight light = ubo.point_lights[i];
+        vec3 direction_to_light = light.position.xyz - frag_pos_world;
+        float atenuation = 1.0 / dot(direction_to_light, direction_to_light);
+        float cos_angl_incidence = max(dot(surface_normal, normalize(direction_to_light)), 0);
+        vec3 intensity = light.color.xyz * light.color.w * atenuation;
 
-    out_color = vec4((diffuse_light + ambient_light) * frag_color, 1.0);
+        diffuse_light += intensity * cos_angl_incidence;
+    }
+
+    out_color = vec4(diffuse_light * frag_color, 1.0);
 }

@@ -73,6 +73,10 @@ namespace lve {
         }
     };
 
+    struct PointLightComponent {
+        float light_intensity = 1.0f;
+    };
+
     class LveGameObject {
     public:
         using id_t = unsigned int;
@@ -83,6 +87,12 @@ namespace lve {
             return LveGameObject{current_id++};
         }
 
+        static LveGameObject makePointLight(
+            float intensity = 10.f,
+            float radius = 0.1f,
+            glm::vec3 color = glm::vec3(1.f)
+        );
+
         LveGameObject(const LveGameObject&) = delete;
         LveGameObject &operator=(const LveGameObject&) = delete;
         LveGameObject(LveGameObject&&) = default;
@@ -90,9 +100,11 @@ namespace lve {
 
         inline id_t getId() {return id;}
 
-        std::shared_ptr<LveModel> model{};
         glm::vec3 color{};
         TransformComponent transform{};
+
+        std::shared_ptr<LveModel> model{};
+        std::unique_ptr<PointLightComponent> point_light = nullptr;
 
     private:
         LveGameObject(id_t obj_id) : id{obj_id} {};

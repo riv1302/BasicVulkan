@@ -66,7 +66,7 @@ namespace lve {
     }
 
     void SimpleRenderSystem::renderGameObjects(
-            FrameInfo &frame_info
+        FrameInfo &frame_info
     ) {
         lve_pipeline->bind(frame_info.command_buffer);
 
@@ -81,7 +81,7 @@ namespace lve {
         );
 
         for (auto& [id, obj]: frame_info.game_objects) {
-            if (obj.model == nullptr) return;
+            if (obj.model == nullptr) continue;
 
             SimplePushConstantData push{};
             push.model_matrix = obj.transform.mat4();
