@@ -1,7 +1,7 @@
 #pragma once
 
-#include "LveGameObject.hpp"
-#include "LveWindow.hpp"
+#include "scene/LveGameObject.hpp"
+#include "core/LveWindow.hpp"
 
 namespace lve {
     class KeyboardMovementController {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "LveDevice.hpp"
-#include "LveBuffer.hpp"
+#include "core/LveDevice.hpp"
+#include "core/LveBuffer.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

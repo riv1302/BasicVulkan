@@ -1,6 +1,6 @@
-#include "LveModel.hpp"
+#include "scene/LveModel.hpp"
 
-#include "LveUtils.hpp"
+#include "scene/LveUtils.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <TinyObjLoader/TinyObjLoader.h>

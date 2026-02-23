@@ -1,4 +1,4 @@
-# include "KeyboardMovementController.h"
+#include "input/KeyboardMovementController.hpp"
 
 namespace lve {
     void KeyboardMovementController::moveInPlaneXZ(

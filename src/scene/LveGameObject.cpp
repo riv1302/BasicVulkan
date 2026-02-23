@@ -1,4 +1,4 @@
-#include "LveGameObject.hpp"
+#include "scene/LveGameObject.hpp"
 
 namespace lve{
     LveGameObject LveGameObject::makePointLight(

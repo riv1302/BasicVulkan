@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LveWindow.hpp"
+#include "core/LveWindow.hpp"
 
 // std lib headers
 #include <string>

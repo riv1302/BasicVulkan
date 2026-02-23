@@ -5,7 +5,7 @@
  * https://github.com/SaschaWillems/Vulkan/blob/master/base/VulkanBuffer.h
  */
  
-#include "LveBuffer.hpp"
+#include "core/LveBuffer.hpp"
  
 // std
 #include <cassert>

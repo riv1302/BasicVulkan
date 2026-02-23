@@ -1,10 +1,10 @@
-#include "FirstApp.hpp"
+#include "app/FirstApp.hpp"
 
-#include "KeyboardMovementController.h"
-#include "LveCamera.hpp"
+#include "input/KeyboardMovementController.hpp"
+#include "scene/LveCamera.hpp"
 #include "systems/SimpleRenderSystem.hpp"
 #include "systems/PointLightSystem.hpp"
-#include "LveBuffer.hpp"
+#include "core/LveBuffer.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

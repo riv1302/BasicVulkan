@@ -1,5 +1,5 @@
-#include "LvePipeline.hpp"
-#include "LveModel.hpp"
+#include "renderer/LvePipeline.hpp"
+#include "scene/LveModel.hpp"
 
 #include <fstream>
 #include <stdexcept>

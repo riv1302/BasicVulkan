@@ -1,4 +1,4 @@
-#include "LveCamera.hpp"
+#include "scene/LveCamera.hpp"
 
 namespace lve {
     void LveCamera::setOrthographicProjection(

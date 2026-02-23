@@ -1,8 +1,8 @@
 #pragma once
 
-#include "LveWindow.hpp"
-#include "LveDevice.hpp"
-#include "LveSwapChain.hpp"
+#include "core/LveWindow.hpp"
+#include "core/LveDevice.hpp"
+#include "core/LveSwapChain.hpp"
 
 #include <memory>
 #include <vector>
