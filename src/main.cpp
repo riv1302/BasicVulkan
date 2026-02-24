@@ -1,15 +1,16 @@
-#include "app/FirstApp.hpp"
+#include "app/Engine.hpp"
+#include "scenes/VaseScene.hpp"
 
-// std
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
 
 int main() {
-    lve::FirstApp app;
+    lve::Engine engine(800, 600, "Vulkan Engine");
+    engine.switchScene(std::make_unique<lve::VaseScene>());
 
     try {
-        app.run();
+        engine.run();
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
