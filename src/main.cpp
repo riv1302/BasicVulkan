@@ -1,5 +1,5 @@
 #include "app/Engine.hpp"
-#include "scenes/VaseScene.hpp"
+#include "scenes/OceanScene.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -7,7 +7,7 @@
 
 int main() {
     lve::Engine engine(800, 600, "Vulkan Engine");
-    engine.switchScene(std::make_unique<lve::VaseScene>());
+    engine.switchScene(std::make_unique<lve::OceanScene>());
 
     try {
         engine.run();
