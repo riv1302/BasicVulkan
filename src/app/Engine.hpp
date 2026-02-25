@@ -44,5 +44,7 @@ namespace lve {
 
         std::unique_ptr<Scene> current_scene;
         std::unique_ptr<Scene> pending_scene;
+
+        float elapsed_time_total{0.f};
     };
 }

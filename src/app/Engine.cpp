@@ -108,6 +108,15 @@ namespace lve {
                 GlobalUbo ubo{};
                 ubo.projection = camera.getProjection();
                 ubo.view = camera.getView();
+
+                glm::mat4 view_proj = ubo.projection * ubo.view;
+                ubo.inv_view_proj = glm::inverse(view_proj);
+                glm::mat4 inv_view = glm::inverse(ubo.view);
+                ubo.camera_pos = glm::vec4(glm::vec3(inv_view[3]), 0.f);
+
+                elapsed_time_total += frame_time;
+                ubo.elapsed_time = elapsed_time_total;
+
                 current_scene->update(frame_info, ubo);
                 ubo_buffers[frame_index]->writeToBuffer(&ubo);
                 ubo_buffers[frame_index]->flush();
