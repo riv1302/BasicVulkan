@@ -54,7 +54,6 @@ namespace lve {
                 .build(global_descriptor_sets[i]);
         }
 
-        viewer_object.transform.translation.z = -2.5f;
     }
 
     void Engine::switchScene(std::unique_ptr<Scene> new_scene) {
@@ -76,7 +75,6 @@ namespace lve {
     }
 
     void Engine::run() {
-        camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5f));
         auto current_time = std::chrono::steady_clock::now();
 
         while (!lve_window.shouldClose()) {
@@ -89,11 +87,12 @@ namespace lve {
             float frame_time = std::chrono::duration<float, std::chrono::seconds::period>(new_time - current_time).count();
             current_time = new_time;
 
-            camera_controller.moveInPlaneXZ(lve_window.getGLFWwindow(), frame_time, viewer_object);
-            camera.setViewYXZ(viewer_object.transform.translation, viewer_object.transform.rotation);
+            current_scene->handleInput(lve_window.getGLFWwindow(), frame_time);
 
             float aspect = lve_renderer.getAspectRatio();
-            camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
+            current_scene->updateProjection(aspect);
+
+            LveCamera& camera = current_scene->getCamera();
 
             if (auto command_buffer = lve_renderer.beginFrame()) {
                 int frame_index = lve_renderer.getFrameIndex();

@@ -1,5 +1,6 @@
 #include "scenes/VaseScene.hpp"
 #include "app/Engine.hpp"
+#include "input/FreeCameraController.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -18,6 +19,10 @@ namespace lve {
             engine.getDevice(),
             engine.getRenderPass(),
             engine.getGlobalDescriptorSetLayout()
+        );
+
+        camera_controller = std::make_unique<FreeCameraController>(
+            glm::vec3{0.f, 0.f, -2.5f}
         );
 
         loadGameObjects(engine.getDevice());

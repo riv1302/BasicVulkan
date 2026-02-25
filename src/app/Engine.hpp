@@ -6,10 +6,7 @@
 #include "renderer/LveRenderer.hpp"
 #include "renderer/LveDescriptors.hpp"
 #include "renderer/LveFrameInfo.hpp"
-#include "scene/LveCamera.hpp"
-#include "scene/LveGameObject.hpp"
 #include "scene/Scene.hpp"
-#include "input/KeyboardMovementController.hpp"
 
 #include <memory>
 #include <string>
@@ -44,10 +41,6 @@ namespace lve {
         std::vector<std::unique_ptr<LveBuffer>> ubo_buffers;
         std::unique_ptr<LveDescriptorSetLayout> global_set_layout;
         std::vector<VkDescriptorSet> global_descriptor_sets;
-
-        LveCamera camera;
-        LveGameObject viewer_object{LveGameObject::createGameObject()};
-        KeyboardMovementController camera_controller;
 
         std::unique_ptr<Scene> current_scene;
         std::unique_ptr<Scene> pending_scene;
