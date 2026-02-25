@@ -41,3 +41,11 @@
 
 /build/
 /.vscode/
+
+# Shader compiled output
+*.spv
+
+# Clangd / IDE
+compile_commands.json
+.clangd/
+.cache/

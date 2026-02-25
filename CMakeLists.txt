@@ -22,10 +22,8 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 # Enlazar Vulkan y GLFW
 target_link_libraries(${PROJECT_NAME} Vulkan::Vulkan glfw)
 
-# --- Compilación automática de shaders ---
-file(GLOB SHADERS ${CMAKE_SOURCE_DIR}/src/shaders/*.*)
+# --- Shader compilation ---
 set(SHADER_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/shaders)
-
 file(GLOB SHADERS ${CMAKE_SOURCE_DIR}/src/shaders/*.*)
 foreach(SHADER ${SHADERS})
     get_filename_component(FILE_NAME ${SHADER} NAME)
