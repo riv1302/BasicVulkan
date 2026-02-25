@@ -13,7 +13,6 @@ namespace lve {
     struct SimplePushConstantData {
         glm::mat4 model_matrix{1.f};
         glm::mat4 normal_matrix{1.f};
-        //alignas(16) glm::vec3 color;
     };
 
     SimpleRenderSystem::SimpleRenderSystem(
@@ -59,8 +58,8 @@ namespace lve {
         pipeline_config.pipeline_layout = pipeline_layout;
         lve_pipeline = std::make_unique<LvePipeline>(
             lve_device,
-            "./shaders/shader.vert.spv",
-            "./shaders/shader.frag.spv",
+            "./shaders/Simple.vert.spv",
+            "./shaders/Simple.frag.spv",
             pipeline_config
         );
     }
@@ -75,7 +74,7 @@ namespace lve {
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             pipeline_layout,
             0, 1,
-            &frame_info.global_desriptor_set,
+            &frame_info.global_descriptor_set,
             0,
             nullptr
         );

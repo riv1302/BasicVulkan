@@ -108,7 +108,7 @@ namespace lve {
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             pipeline_layout,
             0, 1,
-            &frame_info.global_desriptor_set,
+            &frame_info.global_descriptor_set,
             0,
             nullptr
         );

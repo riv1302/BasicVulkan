@@ -92,7 +92,7 @@ namespace lve {
             camera_controller.moveInPlaneXZ(lve_window.getGLFWwindow(), frame_time, viewer_object);
             camera.setViewYXZ(viewer_object.transform.translation, viewer_object.transform.rotation);
 
-            float aspect = lve_renderer.getAspectRation();
+            float aspect = lve_renderer.getAspectRatio();
             camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
             if (auto command_buffer = lve_renderer.beginFrame()) {

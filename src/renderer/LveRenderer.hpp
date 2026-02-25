@@ -21,7 +21,7 @@ namespace lve {
         LveRenderer &operator = (const LveRenderer &) = delete;
 
         inline VkRenderPass getSwapChainRenderPass() const { return lve_swap_chain->getRenderPass(); };
-        inline float getAspectRation() const { return lve_swap_chain->extentAspectRatio(); };
+        inline float getAspectRatio() const { return lve_swap_chain->extentAspectRatio(); };
         inline bool isFrameInProgress() const { return is_frame_started; }
         VkCommandBuffer getCurrentCommandBuffer() const {
             assert(is_frame_started && "Cannot get command buffer when frame not in progress");
