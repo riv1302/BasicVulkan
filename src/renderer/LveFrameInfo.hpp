@@ -19,6 +19,14 @@ namespace lve {
         glm::vec4 ambient_light_color{1.f, 1.f, 1.f, .02f};
         PointLight point_lights[MAX_LIGHTS];
         int num_lights;
+
+        // Ocean/Sky fields (Phase 1+)
+        alignas(16) glm::mat4 inv_view_proj{1.f};
+        alignas(16) glm::vec4 camera_pos{0.f};
+        alignas(16) glm::vec4 sun_direction{0.f, -1.f, 0.f, 0.f};
+        alignas(16) glm::vec4 sun_color{1.f, 0.95f, 0.8f, 1.f};
+        float elapsed_time{0.f};
+        float time_of_day{12.f};
     };
 
     struct FrameInfo {
