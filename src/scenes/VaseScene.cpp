@@ -75,6 +75,6 @@ namespace lve {
     void VaseScene::cleanup() {
         simple_render_system.reset();
         point_light_system.reset();
-        game_objects.clear();
+        Scene::cleanup();
     }
 }
