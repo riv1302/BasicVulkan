@@ -50,28 +50,28 @@ void main() {
     // Store original XZ for Gerstner evaluation
     vec2 p0 = world_pos.xz;
 
-    // Apply Gerstner wave (wave 0 only for Phase 4)
+    // Apply all 6 Gerstner waves
     vec3 displaced = world_pos;
     vec3 T = vec3(1.0, 0.0, 0.0); // tangent
     vec3 B = vec3(0.0, 0.0, 1.0); // bitangent
 
-    Wave w = ubo.waves[0];
-    if (w.amplitude > 0.0) {
-        float dot_dp = dot(w.direction, p0);
-        float theta = w.frequency * dot_dp + w.phase * ubo.elapsed_time;
+    for (int i = 0; i < 6; i++) {
+        Wave w = ubo.waves[i];
+        if (w.amplitude <= 0.0) continue;
+
+        float theta = w.frequency * dot(w.direction, p0) + w.phase * ubo.elapsed_time;
         float s = sin(theta);
         float c = cos(theta);
 
         float QA = w.steepness * w.amplitude;
+        float WA = w.frequency * w.amplitude;
 
         // Displacement
         displaced.x -= QA * w.direction.x * c;
         displaced.z -= QA * w.direction.y * c;
         displaced.y += w.amplitude * s;
 
-        // Analytical normal via tangent/bitangent derivatives
-        float WA = w.frequency * w.amplitude;
-
+        // Analytical tangent/bitangent derivatives
         T.x -= w.steepness * w.direction.x * w.direction.x * WA * s;
         T.y += w.direction.x * WA * c;
         T.z -= w.steepness * w.direction.x * w.direction.y * WA * s;

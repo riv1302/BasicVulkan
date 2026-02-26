@@ -90,18 +90,29 @@ namespace lve {
         }
         ubo.sun_color = glm::vec4(sun_color, sun_intensity);
 
-        // Wave 0: dominant wave for Phase 4
-        constexpr float wavelength = 60.0f;
-        constexpr float amplitude = 1.5f;
-        constexpr float steepness = 0.5f;
-        float frequency = glm::two_pi<float>() / wavelength;
-        float phase_speed = std::sqrt(9.8f * wavelength / glm::two_pi<float>()) * frequency;
+        // 6 Gerstner waves (design doc table)
+        struct WaveParam { glm::vec2 dir; float amp; float wavelength; float Q; };
+        static const WaveParam wave_params[MAX_WAVES] = {
+            {{1.0f, 0.0f},   1.5f,  60.f, 0.5f},
+            {{0.7f, 0.7f},   1.0f,  40.f, 0.4f},
+            {{-0.3f, 0.9f},  0.5f,  25.f, 0.3f},
+            {{0.5f, -0.5f},  0.3f,  15.f, 0.6f},
+            {{-0.8f, 0.2f},  0.15f,  8.f, 0.2f},
+            {{0.1f, -0.9f},  0.08f,  4.f, 0.3f},
+        };
 
-        ubo.waves[0].direction = glm::vec2(1.0f, 0.0f);
-        ubo.waves[0].amplitude = amplitude;
-        ubo.waves[0].frequency = frequency;
-        ubo.waves[0].phase = phase_speed;
-        ubo.waves[0].steepness = steepness;
+        constexpr float g = 9.8f;
+        constexpr float two_pi = glm::two_pi<float>();
+        for (int i = 0; i < MAX_WAVES; i++) {
+            const auto& wp = wave_params[i];
+            float freq = two_pi / wp.wavelength;
+            float phase_speed = std::sqrt(g * wp.wavelength / two_pi) * freq;
+            ubo.waves[i].direction = glm::normalize(wp.dir);
+            ubo.waves[i].amplitude = wp.amp;
+            ubo.waves[i].frequency = freq;
+            ubo.waves[i].phase = phase_speed;
+            ubo.waves[i].steepness = wp.Q;
+        }
     }
 
     void OceanScene::render(FrameInfo& frame_info) {
