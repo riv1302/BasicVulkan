@@ -35,6 +35,46 @@ float hash21(vec2 p) {
     return h.x;
 }
 
+float gradientNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+
+    float a = dot(hash2(i + vec2(0.0, 0.0)) * 2.0 - 1.0, f - vec2(0.0, 0.0));
+    float b = dot(hash2(i + vec2(1.0, 0.0)) * 2.0 - 1.0, f - vec2(1.0, 0.0));
+    float c = dot(hash2(i + vec2(0.0, 1.0)) * 2.0 - 1.0, f - vec2(0.0, 1.0));
+    float d = dot(hash2(i + vec2(1.0, 1.0)) * 2.0 - 1.0, f - vec2(1.0, 1.0));
+
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+float fbm(vec2 p, int octaves) {
+    const mat2 rot = mat2(0.8, 0.6, -0.6, 0.8);
+    float value = 0.0;
+    float amplitude = 0.5;
+    for (int i = 0; i < octaves; i++) {
+        value += amplitude * gradientNoise(p);
+        p = rot * p * 2.0;
+        amplitude *= 0.5;
+    }
+    return value;
+}
+
+float cloudFBM(vec2 uv, float morph_factor) {
+    float n1 = fbm(uv, 5);
+    float n2 = fbm(uv + vec2(7.3, 3.1), 5);
+    float n = mix(n1, n2, morph_factor);
+    n = n * 0.5 + 0.5;  // remap [-0.5,0.5] → [0,1]
+
+    float coverage = 0.5;
+    n = smoothstep(coverage - 0.1, coverage + 0.3, n);
+
+    float detail = fbm(uv * 4.0 + 3.7, 3) * 0.5 + 0.5;
+    n *= mix(0.7, 1.0, detail);
+
+    return clamp(n, 0.0, 1.0);
+}
+
 float voronoi(vec2 p) {
     vec2 i = floor(p);
     vec2 f = fract(p);
@@ -174,6 +214,54 @@ vec3 renderMoon(vec3 ray_dir, vec3 sun_dir, float sun_height) {
     return moon_color * moon_disc * moon_intensity;
 }
 
+// ─── Clouds ─────────────────────────────────────────────────────────────────
+
+vec4 renderClouds(vec3 ray_dir, vec3 sun_dir, float sun_height, float elevation) {
+    if (elevation < 0.01) return vec4(0.0);
+
+    // Ray-plane intersection: cloud layer at Y = -cloudHeight (Y-down)
+    const float cloud_height = 2000.0;
+    float t = min((cloud_height + ubo.camera_pos.y) / elevation, 50000.0);
+    vec2 cloud_uv = (ubo.camera_pos.xz + ray_dir.xz * t) * 0.00015;
+
+    // Wind animation
+    vec2 wind_dir = normalize(vec2(1.0, 0.3));
+    cloud_uv += wind_dir * ubo.elapsed_time * 0.005;
+
+    // Shape morphing
+    float morph_factor = sin(ubo.elapsed_time * 0.02) * 0.5 + 0.5;
+
+    // Cloud density
+    float density = cloudFBM(cloud_uv, morph_factor);
+    if (density < 0.001) return vec4(0.0);
+
+    // Beer's Law illumination
+    vec2 sun_uv_offset = sun_dir.xz * 0.002;
+    float density_towards_sun = cloudFBM(cloud_uv + sun_uv_offset, morph_factor);
+    float light_attenuation = exp(-density_towards_sun * 3.0);
+
+    // Cloud colors
+    vec3 cloud_bright = vec3(1.0, 0.98, 0.95);
+    vec3 cloud_dark   = vec3(0.4, 0.42, 0.5);
+
+    // Sunset tinting
+    float sunset_factor = smoothstep(0.3, 0.0, sun_height) * smoothstep(-0.1, 0.0, sun_height);
+    vec3 sun_tint = mix(vec3(1.0), vec3(1.5, 0.7, 0.3), sunset_factor);
+    cloud_bright *= sun_tint;
+
+    vec3 cloud_color = mix(cloud_dark, cloud_bright, light_attenuation);
+
+    // Night dimming
+    float day_factor = smoothstep(-0.1, 0.1, sun_height);
+    cloud_color *= mix(0.05, 1.0, day_factor);
+
+    // Horizon fade
+    float horizon_fade = smoothstep(0.0, 0.15, elevation);
+    float cloud_alpha = density * horizon_fade;
+
+    return vec4(cloud_color, cloud_alpha);
+}
+
 // ─── Main ───────────────────────────────────────────────────────────────────
 
 void main() {
@@ -210,12 +298,18 @@ void main() {
     // Moon
     vec3 moon = renderMoon(ray_dir, sun_dir, sun_height);
 
+    // Clouds
+    vec4 clouds = renderClouds(ray_dir, sun_dir, sun_height, elevation);
+
     // Composite
     vec3 final_color = sky_color;
     final_color += sun_rgb * (sun_disc + sun_halo + sun_glow);
     final_color += sunset_glow;
     final_color += stars;
     final_color += moon;
+
+    // Clouds blend over everything (occlude stars naturally)
+    final_color = mix(final_color, clouds.rgb, clouds.a);
 
     // Reinhard tone mapping
     final_color = final_color / (final_color + vec3(1.0));
