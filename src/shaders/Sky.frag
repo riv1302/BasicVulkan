@@ -8,6 +8,15 @@ struct PointLight {
     vec4 color;
 };
 
+struct Wave {
+    vec2 direction;
+    float amplitude;
+    float frequency;
+    float phase;
+    float steepness;
+    float _pad[2];
+};
+
 layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection_matrix;
     mat4 view_matrix;
@@ -21,6 +30,9 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     vec4 sun_color;
     float elapsed_time;
     float time_of_day;
+    float fog_density;
+    float time_speed;
+    Wave waves[6];
 } ubo;
 
 // ─── Hash & Noise ───────────────────────────────────────────────────────────
