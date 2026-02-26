@@ -20,6 +20,12 @@ namespace lve {
             engine.getGlobalDescriptorSetLayout()
         );
 
+        ocean_render_system = std::make_unique<OceanRenderSystem>(
+            engine.getDevice(),
+            engine.getRenderPass(),
+            engine.getGlobalDescriptorSetLayout()
+        );
+
         camera_controller = std::make_unique<FreeCameraController>(
             glm::vec3{0.f, -2.f, 0.f}
         );
@@ -83,13 +89,28 @@ namespace lve {
             sun_intensity = glm::mix(0.8f, 0.0f, t);
         }
         ubo.sun_color = glm::vec4(sun_color, sun_intensity);
+
+        // Wave 0: dominant wave for Phase 4
+        constexpr float wavelength = 60.0f;
+        constexpr float amplitude = 1.5f;
+        constexpr float steepness = 0.5f;
+        float frequency = glm::two_pi<float>() / wavelength;
+        float phase_speed = std::sqrt(9.8f * wavelength / glm::two_pi<float>()) * frequency;
+
+        ubo.waves[0].direction = glm::vec2(1.0f, 0.0f);
+        ubo.waves[0].amplitude = amplitude;
+        ubo.waves[0].frequency = frequency;
+        ubo.waves[0].phase = phase_speed;
+        ubo.waves[0].steepness = steepness;
     }
 
     void OceanScene::render(FrameInfo& frame_info) {
         sky_render_system->render(frame_info);
+        ocean_render_system->render(frame_info);
     }
 
     void OceanScene::cleanup() {
+        ocean_render_system.reset();
         sky_render_system.reset();
         Scene::cleanup();
     }
