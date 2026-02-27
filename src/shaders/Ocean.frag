@@ -37,6 +37,45 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
     Wave waves[6];
 } ubo;
 
+// ─── Noise Utilities (duplicated from Sky.frag) ─────────────────────────────
+
+vec2 hash2(vec2 p) {
+    p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+    return fract(sin(p) * 43758.5453);
+}
+
+vec2 voronoi2(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    float F1 = 1.0;
+    float F2 = 1.0;
+    for (int y = -1; y <= 1; y++) {
+        for (int x = -1; x <= 1; x++) {
+            vec2 neighbor = vec2(float(x), float(y));
+            vec2 point = hash2(i + neighbor);
+            float d = length(neighbor + point - f);
+            if (d < F1) {
+                F2 = F1;
+                F1 = d;
+            } else if (d < F2) {
+                F2 = d;
+            }
+        }
+    }
+    return vec2(F1, F2);
+}
+
+float gradientNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+    float a = dot(hash2(i + vec2(0.0, 0.0)) * 2.0 - 1.0, f - vec2(0.0, 0.0));
+    float b = dot(hash2(i + vec2(1.0, 0.0)) * 2.0 - 1.0, f - vec2(1.0, 0.0));
+    float c = dot(hash2(i + vec2(0.0, 1.0)) * 2.0 - 1.0, f - vec2(0.0, 1.0));
+    float d = dot(hash2(i + vec2(1.0, 1.0)) * 2.0 - 1.0, f - vec2(1.0, 1.0));
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
 // ─── Sky Gradient (duplicated from Sky.frag) ────────────────────────────────
 
 vec3 getSkyColor(float elevation, float sun_height) {
@@ -140,6 +179,39 @@ void main() {
     vec3 specular = ubo.sun_color.xyz * ubo.sun_color.w * spec * 0.5;
 
     vec3 color = surface + specular;
+
+    // Foam — crest detection + cellular bubble pattern
+    float max_wave_h = 0.0;
+    for (int i = 0; i < 6; i++) {
+        max_wave_h += ubo.waves[i].amplitude;
+    }
+    float foam_mask = smoothstep(max_wave_h * 0.7, max_wave_h * 0.9, -frag_world_pos.y);
+
+    // Multi-scale Voronoi F2-F1 for bubble edges
+    vec2 foam_uv = frag_world_pos.xz;
+    float time_anim = ubo.elapsed_time * 0.3;
+
+    vec2 v1 = voronoi2(foam_uv * 2.0 + time_anim);
+    float edges1 = smoothstep(0.0, 0.15, v1.y - v1.x);
+
+    vec2 v2 = voronoi2(foam_uv * 6.0 - time_anim * 0.7);
+    float edges2 = smoothstep(0.0, 0.12, v2.y - v2.x);
+
+    float bubble_pattern = max(edges1, edges2 * 0.6);
+
+    // FBM modulation for organic patch shapes
+    float coverage_noise = gradientNoise(foam_uv * 0.5 + time_anim * 0.2) * 0.5 + 0.5;
+    float modulated_mask = foam_mask * smoothstep(0.2, 0.6, coverage_noise + foam_mask * 0.5);
+
+    float foam = modulated_mask * bubble_pattern;
+    color = mix(color, vec3(0.9, 0.95, 1.0), foam * 0.8);
+
+    // Fog — exponential atmospheric fog, blends ocean into sky at horizon
+    float dist = length(frag_world_pos - ubo.camera_pos.xyz);
+    float fog_factor = 1.0 - exp(-dist * ubo.fog_density);
+    vec3 fog_dir = normalize(frag_world_pos - ubo.camera_pos.xyz);
+    vec3 fog_color = evaluateSky(fog_dir);
+    color = mix(color, fog_color, fog_factor);
 
     // Reinhard tone mapping
     color = color / (color + 1.0);
