@@ -267,7 +267,11 @@ void main() {
     float spec = pow(max(dot(N, H), 0.0), 256.0);
     vec3 specular = ubo.sun_color.xyz * ubo.sun_color.w * spec * 0.5;
 
-    vec3 color = surface + specular + ambient;
+    // Diffuse sun lighting on waves
+    float NdotL = max(dot(N, L), 0.0);
+    vec3 diffuse = ubo.sun_color.xyz * ubo.sun_color.w * water_base * NdotL * 2.0;
+
+    vec3 color = surface + specular + ambient + diffuse;
 
     // Foam — crest detection + cellular bubble pattern
     float max_wave_h = 0.0;
