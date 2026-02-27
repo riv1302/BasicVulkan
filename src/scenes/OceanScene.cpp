@@ -90,6 +90,10 @@ namespace lve {
         }
         ubo.sun_color = glm::vec4(sun_color, sun_intensity);
 
+        // Ambient light based on sun height
+        float ambient_strength = glm::clamp(sun_height + 0.1f, 0.05f, 0.3f);
+        ubo.ambient_light_color = glm::vec4(0.4f, 0.45f, 0.5f, ambient_strength);
+
         // 6 Gerstner waves (design doc table)
         struct WaveParam { glm::vec2 dir; float amp; float wavelength; float Q; };
         static const WaveParam wave_params[MAX_WAVES] = {

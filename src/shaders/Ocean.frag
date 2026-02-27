@@ -118,7 +118,87 @@ vec3 getSkyColor(float elevation, float sun_height) {
     return sky;
 }
 
-// ─── Evaluate Sky (gradient + sun, no clouds) ───────────────────────────────
+// ─── Voronoi (single distance, for moon craters) ─────────────────────────────
+
+float voronoi(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    float min_dist = 1.0;
+    for (int y = -1; y <= 1; y++) {
+        for (int x = -1; x <= 1; x++) {
+            vec2 neighbor = vec2(float(x), float(y));
+            vec2 point = hash2(i + neighbor);
+            vec2 diff = neighbor + point - f;
+            min_dist = min(min_dist, length(diff));
+        }
+    }
+    return min_dist;
+}
+
+// ─── Stars ───────────────────────────────────────────────────────────────────
+
+float starField(vec3 ray_dir) {
+    vec3 dir = normalize(ray_dir);
+    float theta = atan(dir.z, dir.x);
+    float phi = asin(clamp(dir.y, -1.0, 1.0));
+
+    vec2 cell = vec2(theta, phi) * 100.0;
+    vec2 cell_id = floor(cell);
+    vec2 cell_frac = fract(cell);
+
+    float h = fract(sin(dot(cell_id, vec2(127.1, 311.7))) * 43758.5453);
+    if (h > 0.02) return 0.0;
+
+    vec2 star_pos = hash2(cell_id);
+    float dist = length(cell_frac - star_pos);
+    float star = smoothstep(0.08, 0.02, dist);
+    float brightness = fract(h * 1000.0);
+
+    return star * (0.3 + 0.7 * brightness);
+}
+
+vec3 renderStars(vec3 ray_dir, float sun_height, float elevation) {
+    float night_factor = smoothstep(0.0, -0.15, sun_height);
+    if (night_factor < 0.001) return vec3(0.0);
+
+    float star = starField(ray_dir);
+
+    float twinkle_seed = fract(sin(dot(floor(vec2(atan(ray_dir.z, ray_dir.x), asin(clamp(ray_dir.y, -1.0, 1.0))) * 100.0), vec2(127.1, 311.7))) * 43758.5453);
+    float twinkle = 0.7 + 0.3 * sin(ubo.elapsed_time * 3.0 + twinkle_seed * 100.0);
+
+    float above_horizon = smoothstep(-0.02, 0.05, elevation);
+
+    vec3 star_color = vec3(0.8, 0.85, 1.0);
+    return star_color * star * twinkle * night_factor * above_horizon;
+}
+
+// ─── Moon ────────────────────────────────────────────────────────────────────
+
+vec3 renderMoon(vec3 ray_dir, vec3 sun_dir, float sun_height) {
+    vec3 moon_dir = -sun_dir;
+    float moon_dot = dot(ray_dir, moon_dir);
+
+    float moon_disc = smoothstep(0.9985, 0.999, moon_dot);
+    if (moon_disc < 0.001) return vec3(0.0);
+
+    vec3 moon_up = normalize(cross(moon_dir, vec3(0.0, 0.0, 1.0)));
+    vec3 moon_right = cross(moon_up, moon_dir);
+    vec2 moon_uv = vec2(
+        dot(ray_dir - moon_dir, moon_right),
+        dot(ray_dir - moon_dir, moon_up)
+    ) * 30.0;
+
+    float craters = voronoi(moon_uv * 3.0);
+    float crater_shade = 0.7 + 0.3 * smoothstep(0.0, 0.3, craters);
+
+    vec3 moon_color = vec3(0.8, 0.82, 0.85) * crater_shade;
+
+    float moon_intensity = smoothstep(0.1, -0.1, sun_height) * 0.8;
+
+    return moon_color * moon_disc * moon_intensity;
+}
+
+// ─── Evaluate Sky (gradient + sun + stars + moon) ────────────────────────────
 
 vec3 evaluateSky(vec3 ray_dir) {
     vec3 sun_dir = normalize(ubo.sun_direction.xyz);
@@ -147,6 +227,12 @@ vec3 evaluateSky(vec3 ray_dir) {
     vec3 sunset_glow = vec3(1.0, 0.4, 0.1) * sunset_glow_factor * horizon_proximity * sun_azimuth_factor * 0.4;
     sky_color += sunset_glow;
 
+    // Stars
+    sky_color += renderStars(ray_dir, sun_height, elevation);
+
+    // Moon
+    sky_color += renderMoon(ray_dir, sun_dir, sun_height);
+
     return sky_color;
 }
 
@@ -167,18 +253,21 @@ void main() {
     float fresnel = 0.02 + 0.98 * pow(1.0 - NdotV, 5.0);
 
     // Water base color
-    vec3 water_base = vec3(0.01, 0.03, 0.05);
+    vec3 water_base = vec3(0.0, 0.05, 0.1);
 
     // Surface: blend between deep water and sky reflection
     vec3 surface = mix(water_base, sky_reflection, fresnel);
 
+    // Ambient lighting
+    vec3 ambient = ubo.ambient_light_color.xyz * ubo.ambient_light_color.w * water_base;
+
     // Sun specular (Blinn-Phong)
-    vec3 L = normalize(-ubo.sun_direction.xyz);
+    vec3 L = normalize(ubo.sun_direction.xyz);
     vec3 H = normalize(L + V);
     float spec = pow(max(dot(N, H), 0.0), 256.0);
     vec3 specular = ubo.sun_color.xyz * ubo.sun_color.w * spec * 0.5;
 
-    vec3 color = surface + specular;
+    vec3 color = surface + specular + ambient;
 
     // Foam — crest detection + cellular bubble pattern
     float max_wave_h = 0.0;

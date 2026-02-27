@@ -221,7 +221,7 @@ vec3 renderMoon(vec3 ray_dir, vec3 sun_dir, float sun_height) {
     vec3 moon_color = vec3(0.8, 0.82, 0.85) * crater_shade;
 
     // Moon visible when sun is below horizon
-    float moon_intensity = smoothstep(0.1, -0.1, sun_height) * 0.3;
+    float moon_intensity = smoothstep(0.1, -0.1, sun_height) * 0.8;
 
     return moon_color * moon_disc * moon_intensity;
 }
