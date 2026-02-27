@@ -11,7 +11,21 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 
 # Buscar Vulkan en el sistema
 find_package(Vulkan REQUIRED)
-find_package(glfw3 REQUIRED)
+
+# Buscar GLFW3; si no se encuentra, descargarlo automáticamente
+find_package(glfw3 QUIET)
+if(NOT glfw3_FOUND)
+    include(FetchContent)
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    FetchContent_Declare(
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG 3.4
+    )
+    FetchContent_MakeAvailable(glfw)
+endif()
 
 # Recoger todos los .cpp en src y subcarpetas
 file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.cpp)
