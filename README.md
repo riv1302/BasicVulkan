@@ -1,6 +1,7 @@
 # BasicVulkan
 
 A lightweight Vulkan graphics engine built for learning and experimenting with GPU programming. The engine supports multiple scenes with runtime switching, custom render systems per scene, and OBJ model loading.
+<img width="960" height="519" alt="{20E838D2-19ED-4D2D-A219-EEAD0DE143C8}" src="https://github.com/user-attachments/assets/a1c7c329-1346-435d-b359-a0289492dec3" />
 
 ## Features
 
