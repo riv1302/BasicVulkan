@@ -5,6 +5,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <cstddef>
+
 #define MAX_LIGHTS 10
 #define MAX_WAVES 6
 namespace lve {
@@ -41,6 +43,11 @@ namespace lve {
         float time_speed{0.01f};
         GpuWave waves[MAX_WAVES];
     };
+
+    // Must match the std140 layout of GlobalUbo declared in the shaders
+    static_assert(sizeof(GpuWave) == 32);
+    static_assert(offsetof(GlobalUbo, waves) == 608);
+    static_assert(sizeof(GlobalUbo) == 800);
 
     struct FrameInfo {
         int frame_index;

@@ -14,7 +14,7 @@ struct Wave {
     float frequency;
     float phase;
     float steepness;
-    float _pad[2];
+    vec2 _pad;
 };
 
 layout(set = 0, binding = 0) uniform GlobalUbo {
